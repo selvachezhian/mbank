@@ -1,9 +1,9 @@
 #!/bin/bash
 
-jemac="$HOME/chezhian_files/applications/jemac"
-sphinx="$HOME/chezhian_files/applications/sphinx"
-jemac_mb="encompass sods oods fmp"
-sphinx_mb="rods"
+proj_1="$HOME/chezhian_files/applications/proj_1"
+proj_2="$HOME/chezhian_files/applications/proj_2"
+proj_1_mb="encompass sods oods fmp"
+proj_2_mb="rods"
 encompass="3333"
 sods="4200"
 oods="4333"
@@ -59,7 +59,7 @@ delete () {
     http delete "localhost:2525/imposters/$1"
 }
 
-jemac_up () {
+proj_1_up () {
     daemon --running --verbose --name=mbank
     RETVAL1=$?
 
@@ -68,9 +68,9 @@ jemac_up () {
         start
     fi
 
-    cd $jemac
+    cd $proj_1
     
-    for imp in $jemac_mb
+    for imp in $proj_1_mb
     do
         
         eval delete \${$imp}
@@ -78,7 +78,7 @@ jemac_up () {
     done
 }
 
-sphinx_up () {
+proj_2_up () {
     daemon --running --verbose --name=mbank
     RETVAL1=$?
 
@@ -87,9 +87,9 @@ sphinx_up () {
         start
     fi
 
-    cd $sphinx
+    cd $proj_2
     
-    for imp in $sphinx_mb
+    for imp in $proj_2_mb
     do
         eval delete \${$imp}
         impost $imp
@@ -103,14 +103,14 @@ case "$1" in
     down)
         stop
     ;;
-    jemac)
-        jemac_up
+    proj_1)
+        proj_1_up
     ;;
-    sphinx)
-        sphinx_up
+    proj_2)
+        proj_2_up
     ;;
     *)
-        echo $"Usage: mbank {up|down|jemac|sphinx}"
+        echo $"Usage: mbank {up|down|proj_1|proj_2}"
         exit 3
     ;;
 esac
