@@ -1,0 +1,118 @@
+#!/bin/bash
+
+jemac="$HOME/chezhian_files/applications/jemac"
+sphinx="$HOME/chezhian_files/applications/sphinx"
+jemac_mb="encompass sods oods fmp"
+sphinx_mb="rods"
+encompass="3333"
+sods="4200"
+oods="4333"
+rods="4100"
+fmp="5333"
+
+
+start () {
+    daemon --running --verbose --name=mbank
+    RETVAL1=$?
+
+    if [ $RETVAL1 = 0 ]
+    then
+        echo "Mountebank is already running"
+    else
+        echo -n "Starting Mountebank..."
+
+        # Start daemon
+        daemon --chdir="$HOME" --command "mb --allowInjection" --respawn --output=/var/log/mountebank/mb.log --name=mbank --verbose
+
+        RETVAL=$?
+        if [ $RETVAL = 0 ]
+        then
+            echo "done."
+        else
+            echo "failed. See error code for more information."
+        fi
+        return $RETVAL
+    fi
+}
+
+stop () {
+    # Stop daemon
+    echo -n "Stopping Mountebank..."
+
+    daemon --stop --name=mbank  --verbose
+    RETVAL=$?
+
+    if [ $RETVAL = 0 ]
+    then
+        echo "Done."
+    else
+        echo "Failed. See error code for more information."
+    fi
+    return $RETVAL
+}
+
+impost () {
+    http post localhost:2525/imposters/ < "examples/$1.json"
+}
+
+delete () {
+    http delete "localhost:2525/imposters/$1"
+}
+
+jemac_up () {
+    daemon --running --verbose --name=mbank
+    RETVAL1=$?
+
+    if [ $RETVAL1 != 0 ]
+    then
+        start
+    fi
+
+    cd $jemac
+    
+    for imp in $jemac_mb
+    do
+        
+        eval delete \${$imp}
+        impost $imp
+    done
+}
+
+sphinx_up () {
+    daemon --running --verbose --name=mbank
+    RETVAL1=$?
+
+    if [ $RETVAL1 != 0 ]
+    then
+        start
+    fi
+
+    cd $sphinx
+    
+    for imp in $sphinx_mb
+    do
+        eval delete \${$imp}
+        impost $imp
+    done
+}
+
+case "$1" in
+    up)
+        start
+    ;;
+    down)
+        stop
+    ;;
+    jemac)
+        jemac_up
+    ;;
+    sphinx)
+        sphinx_up
+    ;;
+    *)
+        echo $"Usage: mbank {up|down|jemac|sphinx}"
+        exit 3
+    ;;
+esac
+
+exit $RETVAL
